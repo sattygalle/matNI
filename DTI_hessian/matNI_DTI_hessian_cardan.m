@@ -27,6 +27,7 @@ img = spm_read_vols(vol);
 % gaussianfilter =  fspecial('gaussian',[6 6], 1);
 % img= imfilter(img, gaussianfilter);
 scalingfactor = 1; 
+totalvoxels = vol.dim(1)*vol.dim(2)*vol.dim(3);
 
 [gx,gy,gz] = gradient(img);
 clear img;
@@ -37,47 +38,29 @@ clear gy;
 [gzx, gzy, gzz] = gradient(gz);
 clear gz;
 
-totalvoxels = vol.dim(1)*vol.dim(2)*vol.dim(3);
+gxx =reshape(gxx, 1,totalvoxels) ;
+gxy =reshape(gxy, 1,totalvoxels) ;
+gxz =reshape(gxz, 1,totalvoxels) ;
+gyx =reshape(gyz, 1,totalvoxels) ;
+gyy =reshape(gyy, 1,totalvoxels) ;
+gyz =reshape(gyz, 1,totalvoxels) ;
+gzx =reshape(gzx, 1,totalvoxels) ;
+gzy =reshape(gzy, 1,totalvoxels) ;
+gzz =reshape(gzz, 1,totalvoxels) ;
 
-maxeig = zeros(totalvoxels,1);
+H(1,1,:) = gxx;
+H(2,1,:) = gyx;
+H(3,1,:) = gzx;
+H(1,2,:) = gxy;
+H(2,2,:) = gyy;
+H(3,2,:) = gzy;
+H(1,3,:) = gzz;
+H(2,3,:) = gyz;
+H(3,3,:) = gzz;
 
-for i = 1:totalvoxels
-    clear H;
-H = [gxx(i) gxy(i) gxz(i) ; ...
-    gyx(i) gyy(i) gyz(i); ...
-    gzx(i) gzy(i) gzz(i)] ;
+D=eig3(H);
 
-%force symmetric matrix in case there are rounding errors
-H= (H+H')/2;
-d = eigs(H,3);
-%d=eig(H);
-%maxeig(i)=max(d);
-
-maxeig(i) = d;
-end
-
-
-
-
-
-
-
-
-% % % 
-% % % for i = 1:totalvoxels
-% % %     clear H;
-% % % H = [gxx(i) gxy(i) gxz(i) ; ...
-% % %     gyx(i) gyy(i) gyz(i); ...
-% % %     gzx(i) gzy(i) gzz(i)] ;
-% % % 
-% % % %force symmetric matrix in case there are rounding errors
-% % % H= (H+H')/2;
-% % % d = eigs(H,3);
-% % % %d=eig(H);
-% % % %maxeig(i)=max(d);
-% % % 
-% % % maxeig(i) = d;
-% % % end
+maxeig= max(D);
 
 
 newimage =reshape(maxeig,vol.dim(1),vol.dim(2),vol.dim(3));
