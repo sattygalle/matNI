@@ -16,6 +16,7 @@ function  matNI_DTI_hessian_cardan( pathtoimage, FWHM )
 % Outputs: filtered image with "hess" prepended to original filename
 %
 % Other m-files required:  SPM, smooth3.m, 
+% eig3.m from http://www.mathworks.com/matlabcentral/fileexchange/27680-multiple-eigen-values-for-2x2-and-3x3-matrices/content/Eig3Folder/eig3.m)
 % Subfunctions:
 %
 % MAT-files required: SPM, Image Processing toolbox
@@ -94,7 +95,7 @@ newimage =reshape(maxeig,vol.dim(1),vol.dim(2),vol.dim(3));
 [pathstr, name, ext] = fileparts(vol.fname);
 
 %generate new header
-newfile = fullfile(pathstr, ['hess2_' num2str(FWHM) '_' name ext]);
+newfile = fullfile(pathstr, ['hess_' num2str(FWHM) '_' name ext]);
 newvol=vol;
 newvol.fname = newfile;
 
