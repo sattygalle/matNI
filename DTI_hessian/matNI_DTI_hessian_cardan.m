@@ -1,4 +1,4 @@
-function  matNI_DTI_hessian_cardan( pathtoimage, SDforGaussianSmoothing )
+function  matNI_DTI_hessian_cardan( pathtoimage, FWHM )
 %MATNI_DTI_HESSIAN_cardan - compute hessian and apply to 3D image
 %   compute hessian and apply to 3D image and saves image in location of
 %   processed image. Requires SPM. Uses the Cardan equation to solve for
@@ -10,8 +10,8 @@ function  matNI_DTI_hessian_cardan( pathtoimage, SDforGaussianSmoothing )
 % Inputs: 
 %
 % pathtoimage - string containing full path to image to filter
-% SDforGaussianSmoothing - SD for gaussian kernel used to smooth the image
-%   before calculating hessian, default = 1
+% FWHM - FWHM for gaussian kernel used to smooth the image
+%   before calculating hessian, (multipled by 3.5 to determine kernel size)
 %   
 % Outputs: filtered image with "hess" prepended to original filename
 %
@@ -47,12 +47,14 @@ img = spm_read_vols(vol);
 % h = fspecial('gaussian',[1,2*cutoff+1],sigma);
 % dh = h .* (-cutoff:cutoff) / (-sigma^2);
 % out = conv2(dh,h,img,'same');
-sd = SDforGaussianSmoothing;
+
+
+sd = FWHM/(2*sqrt(2*log(2)));
 size = ceil(2*floor(3.5*sd/2)+1); %calculated kernel size (3.5* sd) and made an odd number
 
 img = smooth3(img,'gaussian',size,sd);
 
-spacing = 0.1; 
+spacing = 1; 
 totalvoxels = vol.dim(1)*vol.dim(2)*vol.dim(3);
 
 [gx,gy,gz] = gradient(img,spacing);
@@ -92,7 +94,7 @@ newimage =reshape(maxeig,vol.dim(1),vol.dim(2),vol.dim(3));
 [pathstr, name, ext] = fileparts(vol.fname);
 
 %generate new header
-newfile = fullfile(pathstr, ['hess_' num2str(sd) '_' name ext]);
+newfile = fullfile(pathstr, ['hess2_' num2str(FWHM) '_' name ext]);
 newvol=vol;
 newvol.fname = newfile;
 
