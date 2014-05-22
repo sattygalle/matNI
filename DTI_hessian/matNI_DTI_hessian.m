@@ -47,7 +47,8 @@ H = [gxx(i) gxy(i) gxz(i) ; ...
     gyx(i) gyy(i) gyz(i); ...
     gzx(i) gzy(i) gzz(i)] ;
 
-%force symmetric matrix in case there are rounding errors
+%force symmetric matrix in case there are rounding errors (see Nand et al.
+%"Detecting Structure in Diffusion Tensor MR Images")
 H= (H+H')/2;
 d = eigs(H,3);
 %d=eig(H);
