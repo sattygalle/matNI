@@ -1,22 +1,26 @@
-function  matNI_DTI_hessian( pathtoimage )
-%MATNI_DTI_HESSIAN - compute hessian and apply to 3D image
+function  matNI_DTI_hessian_cardan( pathtoimage, SDforGaussianSmoothing )
+%MATNI_DTI_HESSIAN_cardan - compute hessian and apply to 3D image
 %   compute hessian and apply to 3D image and saves image in location of
-%   processed image. Requires SPM.
+%   processed image. Requires SPM. Uses the Cardan equation to solve for
+%   eigenvalues, which could have accuracy issues vs a numerical solution
+%   but is much faster.
 %
-% Syntax: matNI_DTI_hessian( pathtoimage)
+% Syntax: matNI_DTI_hessian( pathtoimage, SDforGaussianSmoothing)
 %
-% Inputs: pathtoimage - string containing full path to image to apply
-% filter
+% Inputs: 
+%
+% pathtoimage - string containing full path to image to filter
+% SDforGaussianSmoothing - SD for gaussian kernel used to smooth the image
+%   before calculating hessian, default = 1
 %   
 % Outputs: filtered image with "hess" prepended to original filename
 %
-% Other m-files required:  SPM
+% Other m-files required:  SPM, smooth3.m, 
 % Subfunctions:
 %
 % MAT-files required: SPM, Image Processing toolbox
 %
 % See also:
-%
 % To Do: 
 %
 % Author: Suneth Attygalle, UCSF Memory and Aging Center
@@ -40,50 +44,55 @@ img = spm_read_vols(vol);
 % h = fspecial('gaussian',2*cutoff+1,sigma);
 % img= imfilter(img, h)
 
-img = smooth3(img,'gaussian',5,1);
+% h = fspecial('gaussian',[1,2*cutoff+1],sigma);
+% dh = h .* (-cutoff:cutoff) / (-sigma^2);
+% out = conv2(dh,h,img,'same');
+sd = SDforGaussianSmoothing;
+size = ceil(2*floor(3.5*sd/2)+1); %calculated kernel size (3.5* sd) and made an odd number
+
+img = smooth3(img,'gaussian',size,sd);
 
 spacing = 0.1; 
 totalvoxels = vol.dim(1)*vol.dim(2)*vol.dim(3);
 
 [gx,gy,gz] = gradient(img,spacing);
 clear img;
-[gxx, gxy, gxz] = gradient(gx,spacing);
+[g.xx, g.xy, g.xz] = gradient(gx,spacing);
 clear gx;
-[gyx, gyy, gyz] = gradient(gy,spacing);
+[g.yx, g.yy, g.yz] = gradient(gy,spacing);
 clear gy;
-[gzx, gzy, gzz] = gradient(gz,spacing);
+[g.zx, g.zy, g.zz] = gradient(gz,spacing);
 clear gz;
 
-gxx =reshape(gxx, 1,totalvoxels) ;
-gxy =reshape(gxy, 1,totalvoxels) ;
-gxz =reshape(gxz, 1,totalvoxels) ;
-gyx =reshape(gyx, 1,totalvoxels) ;
-gyy =reshape(gyy, 1,totalvoxels) ;
-gyz =reshape(gyz, 1,totalvoxels) ;
-gzx =reshape(gzx, 1,totalvoxels) ;
-gzy =reshape(gzy, 1,totalvoxels) ;
-gzz =reshape(gzz, 1,totalvoxels) ;
+g.xx =reshape(g.xx, 1,totalvoxels) ;
+g.xy =reshape(g.xy, 1,totalvoxels) ;
+g.xz =reshape(g.xz, 1,totalvoxels) ;
+g.yx =reshape(g.yx, 1,totalvoxels) ;
+g.yy =reshape(g.yy, 1,totalvoxels) ;
+g.yz =reshape(g.yz, 1,totalvoxels) ;
+g.zx =reshape(g.zx, 1,totalvoxels) ;
+g.zy =reshape(g.zy, 1,totalvoxels) ;
+g.zz =reshape(g.zz, 1,totalvoxels) ;
 
-H(1,1,:) = gxx;
-H(2,1,:) = gyx;
-H(3,1,:) = gzx;
-H(1,2,:) = gxy;
-H(2,2,:) = gyy;
-H(3,2,:) = gzy;
-H(1,3,:) = gxz;
-H(2,3,:) = gyz;
-H(3,3,:) = gzz;
+H(1,1,:) = g.xx;
+H(2,1,:) = g.yx;
+H(3,1,:) = g.zx;
+H(1,2,:) = g.xy;
+H(2,2,:) = g.yy;
+H(3,2,:) = g.zy;
+H(1,3,:) = g.xz;
+H(2,3,:) = g.yz;
+H(3,3,:) = g.zz;
 
-
+clear g;
 D=eig3(H);
-
 maxeig= max(D);
 
 newimage =reshape(maxeig,vol.dim(1),vol.dim(2),vol.dim(3));
 [pathstr, name, ext] = fileparts(vol.fname);
 
 %generate new header
-newfile = fullfile(pathstr, ['hess' name 'gaussianmaxabseig' ext]);
+newfile = fullfile(pathstr, ['hess_' num2str(sd) '_' name ext]);
 newvol=vol;
 newvol.fname = newfile;
 
