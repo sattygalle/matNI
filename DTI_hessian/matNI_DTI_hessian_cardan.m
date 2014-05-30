@@ -90,6 +90,8 @@ H(3,3,:) = g.zz;
 clear g;
 D=eig3(H);
 maxeig= max(D);
+%invertimage
+maxeig=maxeig.*(-1)
 
 newimage =reshape(maxeig,vol.dim(1),vol.dim(2),vol.dim(3));
 [pathstr, name, ext] = fileparts(vol.fname);
