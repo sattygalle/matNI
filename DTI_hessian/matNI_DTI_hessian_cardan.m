@@ -5,13 +5,12 @@ function  matNI_DTI_hessian_cardan( pathtoimage, FWHM )
 %   eigenvalues, which could have accuracy issues vs a numerical solution
 %   but is much faster.
 %
-% Syntax: matNI_DTI_hessian( pathtoimage, SDforGaussianSmoothing)
+% Syntax: matNI_DTI_hessian( pathtoimage, fWHM)
 %
 % Inputs: 
-%
-% pathtoimage - string containing full path to image to filter
-% FWHM - FWHM for gaussian kernel used to smooth the image
-%   before calculating hessian, (multipled by 3.5 to determine kernel size)
+%           pathtoimage -  string with full path file to compute hessian 
+%           FWHM - full width half maximum to use for gaussian smoothing,
+%           SD and sigma are calculated from the FWHM automatically
 %   
 % Outputs: filtered image with "hess" prepended to original filename
 %
