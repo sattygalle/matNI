@@ -51,11 +51,12 @@ img = spm_read_vols(vol);
 
 
 sd = FWHM/(2*sqrt(2*log(2)));
-size = ceil(2*floor(3.5*sd/2)+1); %calculated kernel size (3.5* sd) and made an odd number
+kernelscale = 3.5;
+size = ceil(2*floor(kernelscale*sd/2)+1); %calculated kernel size (3.5* sd) and made an odd number
 
 img = smooth3(img,'gaussian',size,sd);
 
-spacing = 1; 
+spacing = 0.1; 
 totalvoxels = vol.dim(1)*vol.dim(2)*vol.dim(3);
 
 [gx,gy,gz] = gradient(img,spacing);
@@ -89,15 +90,29 @@ H(3,3,:) = g.zz;
 
 clear g;
 D=eig3(H);
-maxeig= max(D);
+maxeig= min(D);
+%maxeig= max(D);
+
 %invertimage
-maxeig=maxeig.*(-1)
+maxeig=maxeig.*(-1);
+%maxeig = imadjust(maxeig,stretchlim(maxeig, [0.0001 0.5]));
+%rescale image
+%imadjust? stretchlim?
+maxeig(maxeig<0) =0;
+
+%shift image
+%maxeig = maxeig+min(maxeig);
+
+% sd = FWHM/2/(2*sqrt(2*log(2)));
+% size = ceil(2*floor(3.5*sd/2)+1);
 
 newimage =reshape(maxeig,vol.dim(1),vol.dim(2),vol.dim(3));
+%newimage = smooth3(newimage,'gaussian',size,sd);
+%newimage = mat2gray(newimage);
 [pathstr, name, ext] = fileparts(vol.fname);
 
 %generate new header
-newfile = fullfile(pathstr, ['hess_' num2str(FWHM) '_' name ext]);
+newfile = fullfile(pathstr, ['hess_real' num2str(FWHM) '_' name ext]);
 newvol=vol;
 newvol.fname = newfile;
 

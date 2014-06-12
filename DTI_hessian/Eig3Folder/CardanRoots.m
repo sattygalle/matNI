@@ -25,7 +25,7 @@ function roots = CardanRoots(varargin)
 %     Original 20-May-2010
 
 % Adjustable parameter
-tol = 0;
+tol = 0.0001;
 
 if nargin<4
     P = varargin{1};
