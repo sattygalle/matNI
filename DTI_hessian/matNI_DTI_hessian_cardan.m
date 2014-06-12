@@ -95,9 +95,8 @@ maxeig= min(D);
 
 %invertimage
 maxeig=maxeig.*(-1);
-%maxeig = imadjust(maxeig,stretchlim(maxeig, [0.0001 0.5]));
-%rescale image
-%imadjust? stretchlim?
+
+%mask negative values
 maxeig(maxeig<0) =0;
 
 %shift image
@@ -112,7 +111,7 @@ newimage =reshape(maxeig,vol.dim(1),vol.dim(2),vol.dim(3));
 [pathstr, name, ext] = fileparts(vol.fname);
 
 %generate new header
-newfile = fullfile(pathstr, ['hess_real' num2str(FWHM) '_' name ext]);
+newfile = fullfile(pathstr, ['hess_' num2str(FWHM) '_' name ext]);
 newvol=vol;
 newvol.fname = newfile;
 
