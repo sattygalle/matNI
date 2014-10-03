@@ -2,7 +2,20 @@ function matNI_extractROIsfromSPM12labels(label_nifti_file)
 %matNI_extractROIsfromSPM12labels Grab ROIs from SPM12 Atlas
 %   Loads labelled NIFTI file and finds matching xml file and outputs all
 %   of the ROIs as separate files for ROI extraction.
-
+%
+% Syntax:  matNI_extractROIsfromSPM12labels(label_nifti_file)
+%
+% Inputs:  label_nifti_file - likely \spm12\tpm\labels_Neuromorphometrics.nii
+%
+% Outputs: writes ROIs to \spm12\tpm\splitROIs
+%
+% Other m-files required: SPM12
+%
+% Author: Suneth Attygalle
+% Created 10/02/2014
+%
+% Revisions:
+%----------------------
 try
     vhdr = spm_vol(label_nifti_file);
     v = spm_read_vols(vhdr);
@@ -19,7 +32,7 @@ mkdir(fullfile(fileparts(label_nifti_file), 'splitROIs'));
 %for each ROI, extract ROI and save it. 
 for roi = 1:size(tokens,2)
 
-    ROIindex = str2num(tokens{roi}{1});
+    ROIindex = str2double(tokens{roi}{1});
     ROIimage = v;
     ROIimage(ROIimage~=ROIindex)=0; %set all values outside ROI to zero
     
@@ -27,7 +40,6 @@ for roi = 1:size(tokens,2)
     newhdr.fname = fullfile(fileparts(label_nifti_file), 'splitROIs', strrep([tokens{roi}{2} '.nii'],' ', '_')  );
     
     spm_write_vol(newhdr, ROIimage);
-    
     
 end
 
