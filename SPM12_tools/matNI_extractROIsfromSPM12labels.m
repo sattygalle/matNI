@@ -35,7 +35,8 @@ for roi = 1:size(tokens,2)
     ROIindex = str2double(tokens{roi}{1});
     ROIimage = v;
     ROIimage(ROIimage~=ROIindex)=0; %set all values outside ROI to zero
-    
+    ROIimage(ROIimage==ROIindex)=1; %set all values ROI to 1 (binarize)
+
     newhdr= vhdr;
     newhdr.fname = fullfile(fileparts(label_nifti_file), 'splitROIs', strrep([tokens{roi}{2} '.nii'],' ', '_')  );
     
